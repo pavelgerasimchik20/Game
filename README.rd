@@ -1,1 +1,1 @@
-Simple game to Full Stack course
+Simple game on c programming language to Full Stack course...started 20.09.2022
