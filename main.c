@@ -1,26 +1,20 @@
-#define _CRT_SECURE_NO_DEPRECATE
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
-#include <wchar.h>
+#include <tchar.h>
 
-int wmain(int argc, wchar_t** argv) {
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PWSTR szCmdLine, int CmdShow) {
 
-    PDWORD cChars = NULL;
-    HANDLE std = GetStdHandle(STD_OUTPUT_HANDLE);
-    printf("Hi its me");
-
-    if (std == INVALID_HANDLE_VALUE) {
-        wprintf(L"Cannot retrieve standard output handle\n (%d)",
-            GetLastError());
-    }
-
-    if (argv[1]) {
-
-        WriteConsoleW(std, argv[1], wcslen(argv[1]), cChars, NULL);
-    }
-    
-    CloseHandle(std);
-
+    printf("Hi1\n");
+    MessageBoxW(NULL, szCmdLine, L"first Window", MB_YESNOCANCEL);
+    printf("Hi2\n");
     return 0;
 }
+
+int main() {
+    printf("Hi3\n");
+    wWinMain(NULL,NULL,NULL,NULL);
+    return 0;
+}
+
