@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
+#define ID_HOTKEY 1
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
@@ -27,7 +28,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     RegisterClassW(&wc);
     hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        100, 100, 800, 600, NULL, NULL, hInstance, NULL);
+        0, 0, 800, 600, NULL, NULL, hInstance, NULL);
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -46,15 +47,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     switch (msg) 
     {
     case WM_CREATE:
-
+        RegisterHotKey(hwnd, ID_HOTKEY, MOD_ALT, 0x51);  // ALT + Q  to close the window
         CenterWindow(hwnd);
         break;
 
-        case WM_DESTROY:
-        {
-            PostQuitMessage(EXIT_SUCCESS);
+    case WM_HOTKEY:
+        if ((wParam) == ID_HOTKEY) {
+            CloseWindow(hwnd);
         }
-        return 0;
+        break;
+    case WM_DESTROY:
+        UnregisterHotKey(hwnd, ID_HOTKEY);
+        PostQuitMessage(EXIT_SUCCESS);    
+        break;
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
