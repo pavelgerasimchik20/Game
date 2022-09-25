@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
-#define ID_HOTKEY 1
+#define ID_HOTKEY_QUIT 1
+#define ID_HOTKEY_NEW 2
+#define IDM_FILE_NEW 1
+#define IDM_FILE_QUIT 3
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
+void AddMenus(HWND);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -30,7 +34,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0, 0, 800, 600, NULL, NULL, hInstance, NULL);
 
-    ShowWindow(hwnd, nCmdShow);
+    ShowWindow(hwnd, SW_MAXIMIZE);
     UpdateWindow(hwnd);
 
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -47,17 +51,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     switch (msg) 
     {
     case WM_CREATE:
-        RegisterHotKey(hwnd, ID_HOTKEY, MOD_ALT, 0x51);  // ALT + Q  to close the window
+        AddMenus(hwnd);
+        RegisterHotKey(hwnd, ID_HOTKEY_QUIT, MOD_ALT, 0x51);  // ALT + Q  to close the window
+        RegisterHotKey(hwnd, ID_HOTKEY_NEW, MOD_ALT, 0x4E);  // ALT + N  to restart
         CenterWindow(hwnd);
         break;
 
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case IDM_FILE_NEW:
+            MessageBeep(MB_ICONINFORMATION);
+            break;
+        case IDM_FILE_QUIT:
+            SendMessage(hwnd, WM_CLOSE, 0, 0);
+            break;
+        }
+        break;
+
     case WM_HOTKEY:
-        if ((wParam) == ID_HOTKEY) {
-            CloseWindow(hwnd);
+        if ((wParam) == ID_HOTKEY_QUIT) {
+            DestroyWindow(hwnd);
+        }
+        if ((wParam) == ID_HOTKEY_NEW) {
+            MessageBeep(MB_ICONINFORMATION);
         }
         break;
     case WM_DESTROY:
-        UnregisterHotKey(hwnd, ID_HOTKEY);
+        UnregisterHotKey(hwnd, ID_HOTKEY_QUIT);
+        UnregisterHotKey(hwnd, ID_HOTKEY_NEW);
         PostQuitMessage(EXIT_SUCCESS);    
         break;
     }
@@ -79,3 +100,18 @@ void CenterWindow(HWND hwnd) {
         (screen_h - win_h) / 2, 0, 0, SWP_NOSIZE);
 }
 
+void AddMenus(HWND hwnd) {
+
+    HMENU hMenubar;
+    HMENU hMenu;
+
+    hMenubar = CreateMenu();
+    hMenu = CreateMenu();
+
+    AppendMenuW(hMenu, MF_STRING, IDM_FILE_NEW, L"&New          (ALT + N)");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, IDM_FILE_QUIT, L"&Quit         (ALT + Q)");
+
+    AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&File");
+    SetMenu(hwnd, hMenubar);
+}
