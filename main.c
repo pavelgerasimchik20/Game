@@ -4,8 +4,9 @@
 #include <tchar.h>
 #define ID_HOTKEY_QUIT 1
 #define ID_HOTKEY_NEW 2
-#define IDM_FILE_NEW 1
-#define IDM_FILE_QUIT 3
+#define IDM_NEW 1
+#define IDM_FULL 2
+#define IDM_QUIT 3
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
@@ -34,7 +35,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0, 0, 800, 600, NULL, NULL, hInstance, NULL);
 
-    ShowWindow(hwnd, SW_MAXIMIZE);
+    ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
 
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -59,10 +60,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
-        case IDM_FILE_NEW:
+        case IDM_NEW:
             MessageBeep(MB_ICONINFORMATION);
             break;
-        case IDM_FILE_QUIT:
+        case IDM_FULL:
+            ShowWindow(hwnd, SW_MAXIMIZE);
+            break;
+        case IDM_QUIT:
             SendMessage(hwnd, WM_CLOSE, 0, 0);
             break;
         }
@@ -108,10 +112,11 @@ void AddMenus(HWND hwnd) {
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
 
-    AppendMenuW(hMenu, MF_STRING, IDM_FILE_NEW, L"&New          (ALT + N)");
+    AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New          (ALT + N)");
+    AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, IDM_FILE_QUIT, L"&Quit         (ALT + Q)");
+    AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit         (ALT + Q)");
 
-    AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&File");
+    AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Game menu");
     SetMenu(hwnd, hMenubar);
 }
