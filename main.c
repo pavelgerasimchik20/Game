@@ -1,3 +1,6 @@
+#pragma comment(linker, "\"/manifestdependency:type='Win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
@@ -7,10 +10,16 @@
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
+#define masSize 5
+#define pixelMove 10 // this var will responce for speed of obj   ***TODO pick mode ???***
+RECT mas[masSize];
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
 void AddMenus(HWND);
+void WinShow(HDC dc);
+void InitCoordinates(void);
+void ItemMove(void);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -34,16 +43,26 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0, 0, 800, 600, NULL, NULL, hInstance, NULL);
+    HDC dc = GetDC(hwnd);  // getting context of the window
 
     ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
+    InitCoordinates();
 
-    while (GetMessage(&msg, NULL, 0, 0)) {
-
-        DispatchMessage(&msg);
+    while (1) {
+        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the mess queue
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else {
+            ItemMove();
+            WinShow(dc);
+            Sleep(1);
+        }
+        //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  that needs to spy on codes of everything
     }
    
-    return (int)msg.wParam;
+    return 0;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
@@ -70,7 +89,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
             SendMessage(hwnd, WM_CLOSE, 0, 0);
             break;
         }
-        break;
+        return 0;
 
     case WM_HOTKEY:
         if ((wParam) == ID_HOTKEY_QUIT) {
@@ -119,4 +138,37 @@ void AddMenus(HWND hwnd) {
 
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Game menu");
     SetMenu(hwnd, hMenubar);
+}
+
+void WinShow(HDC dc) {
+    SelectObject(dc, GetStockObject(DC_BRUSH));
+    SetDCBrushColor(dc, RGB(15, 0, 12));
+    Rectangle(dc, 0, 0, 800, 600);
+    SelectObject(dc, GetStockObject(DC_PEN));
+    SetDCBrushColor(dc, RGB(200, 0, 0));
+    for (int i = 0; i < masSize; i++)
+    {
+        Rectangle(dc, mas[i].left, mas[i].top, mas[i].right, mas[i].bottom);
+    }
+}
+
+void InitCoordinates() {
+    srand(13);
+    for (int i = 0; i < masSize; i++)
+    {
+        mas[i].left = rand() % 800 - 50;
+        mas[i].top = rand() % 400;
+        mas[i].right = mas[i].left + 50;
+        mas[i].bottom = mas[i].top + 50;
+    }
+}
+
+void ItemMove(){
+    for (int i = 0; i < masSize; i++)
+    {
+        mas[i].left += pixelMove;     
+        if(mas[i].left > 750) mas[i].left = -50;
+        mas[i].right = mas[i].left + 50;
+        mas[i].bottom = mas[i].top + 50;
+    }
 }
