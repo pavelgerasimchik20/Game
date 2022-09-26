@@ -13,6 +13,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define masSize 5
 #define pixelMove 10 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT mas[masSize];
+RECT clientArea; 
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
@@ -69,6 +70,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam) {
 
+    if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
     switch (msg) 
     {
     case WM_CREATE:
@@ -142,15 +144,22 @@ void AddMenus(HWND hwnd) {
 }
 
 void WinShow(HDC dc) {
-    SelectObject(dc, GetStockObject(DC_BRUSH));
-    SetDCBrushColor(dc, RGB(15, 0, 12));
-    Rectangle(dc, 0, 0, 800, 600);
-    SelectObject(dc, GetStockObject(DC_PEN));
-    SetDCBrushColor(dc, RGB(200, 0, 0));
-    for (int i = 0; i < masSize; i++)
-    {
-        Rectangle(dc, mas[i].left, mas[i].top, mas[i].right, mas[i].bottom);
-    }
+
+    HDC virtualDC = CreateCompatibleDC(dc); // virtual context
+    HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
+    SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
+        SelectObject(virtualDC, GetStockObject(DC_BRUSH));
+        SetDCBrushColor(virtualDC, RGB(15, 0, 12));
+        Rectangle(virtualDC, 0, 0, 800, 600);
+        SelectObject(virtualDC, GetStockObject(DC_PEN));
+        SetDCBrushColor(virtualDC, RGB(200, 0, 0));
+        for (int i = 0; i < masSize; i++)
+        {
+            Rectangle(virtualDC, mas[i].left, mas[i].top, mas[i].right, mas[i].bottom);
+        }
+        BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
+        DeleteDC(virtualDC);
+        DeleteObject(virtualBITMAP);
 }
 
 void InitCoordinates() {
