@@ -51,6 +51,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the mess queue
+            if (msg.message == WM_QUIT)break;
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
@@ -59,7 +60,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             WinShow(dc);
             Sleep(1);
         }
-        //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  that needs to spy on codes of everything
+        //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  that needs to spy on action codes
     }
    
     return 0;
