@@ -10,16 +10,37 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
-#define masSize 5
-#define pixelMove 10 // this var will responce for speed of obj   ***TODO pick mode ???***
-RECT mas[masSize];
+//#define masSize 5
+#define clientAreaHor 900
+#define clientAreaHorF 1600
+#define clientAreaVert 600
+#define clientAreaVertF 1100
+#define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
+//RECT mas[masSize];
 RECT clientArea; 
+
+typedef struct SPoint {
+    float x, y;
+}TPoint;
+
+typedef struct SHero {
+    TPoint pos;
+    TPoint size;
+    COLORREF brush;
+}THero;
+
+TPoint getPoint(float x, float y) {
+    TPoint point;
+    point.x = x;
+    point.y = y;
+    return point;
+}
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
 void AddMenus(HWND);
-void WinShow(HDC dc);
-void InitCoordinates(void);
+void WinShow(HDC dc, int hor, int vert);
+//void InitCoordinates(void);
 void ItemMove(void);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -43,41 +64,63 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     RegisterClassW(&wc);
     hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        0, 0, 800, 600, NULL, NULL, hInstance, NULL);
+        0, 0, clientAreaHor, clientAreaVert, NULL, NULL, hInstance, NULL);
     HDC dc = GetDC(hwnd);  // getting context of the window
 
     ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
-    InitCoordinates();
+    //InitCoordinates();
 
+    Sleep(1500);
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the mess queue
-            if (msg.message == WM_QUIT)break;
+            if (msg.message == WM_QUIT) break;
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
         else {
             ItemMove();
-            WinShow(dc);
+            WinShow(dc,clientAreaHor,clientAreaVert);
             Sleep(1);
         }
         //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  that needs to spy on action codes
     }
-   
     return 0;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam) {
 
+    static HBITMAP hbtm;
+    HDC hdc;
+    PAINTSTRUCT ps;
+    BITMAP bitmap;
+    HDC hdcMem;
+    HGDIOBJ oldBitmap;
+    
     if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
     switch (msg) 
     {
     case WM_CREATE:
+        
         AddMenus(hwnd);
         RegisterHotKey(hwnd, ID_HOTKEY_QUIT, MOD_ALT, 0x51);  // ALT + Q  to close the window
         RegisterHotKey(hwnd, ID_HOTKEY_NEW, MOD_ALT, 0x4E);  // ALT + N  to restart
         CenterWindow(hwnd);
+        break;
+
+    case WM_PAINT:
+        hbtm = (HBITMAP)LoadImageW(NULL, L"D:\\Pictures\\welcome.bmp",
+            IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+        hdc = BeginPaint(hwnd, &ps);
+        hdcMem = CreateCompatibleDC(hdc);
+        oldBitmap = SelectObject(hdcMem, hbtm);
+        GetObject(hbtm, sizeof(bitmap), &bitmap);
+        BitBlt(hdc, 5, 5, bitmap.bmWidth, bitmap.bmHeight,
+            hdcMem, 0, 0, SRCCOPY);
+        SelectObject(hdcMem, oldBitmap);
+        DeleteDC(hdcMem);
+        EndPaint(hwnd, &ps);
         break;
 
     case WM_COMMAND:
@@ -103,6 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         }
         break;
     case WM_DESTROY:
+        DeleteObject(hbtm);
         UnregisterHotKey(hwnd, ID_HOTKEY_QUIT);
         UnregisterHotKey(hwnd, ID_HOTKEY_NEW);
         PostQuitMessage(EXIT_SUCCESS);    
@@ -143,42 +187,42 @@ void AddMenus(HWND hwnd) {
     SetMenu(hwnd, hMenubar);
 }
 
-void WinShow(HDC dc) {
+void WinShow(HDC dc, int hor, int vert) {
 
     HDC virtualDC = CreateCompatibleDC(dc); // virtual context
     HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
     SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
-        SelectObject(virtualDC, GetStockObject(DC_BRUSH));
-        SetDCBrushColor(virtualDC, RGB(15, 0, 12));
-        Rectangle(virtualDC, 0, 0, 800, 600);
+       /* SelectObject(virtualDC, GetStockObject(DC_BRUSH));
+        SetDCBrushColor(virtualDC, RGB(25, 0, 12));
+        Rectangle(virtualDC, 0, 0, hor, vert);
         SelectObject(virtualDC, GetStockObject(DC_PEN));
-        SetDCBrushColor(virtualDC, RGB(200, 0, 0));
+        SetDCBrushColor(virtualDC, RGB(100, 0, 0));
         for (int i = 0; i < masSize; i++)
         {
             Rectangle(virtualDC, mas[i].left, mas[i].top, mas[i].right, mas[i].bottom);
-        }
+        }*/
         BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
         DeleteDC(virtualDC);
         DeleteObject(virtualBITMAP);
 }
 
-void InitCoordinates() {
-    srand(13);
-    for (int i = 0; i < masSize; i++)
-    {
-        mas[i].left = rand() % 800 - 50;
-        mas[i].top = rand() % 400;
-        mas[i].right = mas[i].left + 50;
-        mas[i].bottom = mas[i].top + 50;
-    }
-}
+//void InitCoordinates() {
+//    srand(13);
+//    for (int i = 0; i < masSize; i++)
+//    {
+//        mas[i].left = rand() % clientAreaHor - 50;
+//        mas[i].top = rand() % (clientAreaHor/2);
+//        mas[i].right = mas[i].left + 50;
+//        mas[i].bottom = mas[i].top + 50;
+//    }
+//}
 
 void ItemMove(){
-    for (int i = 0; i < masSize; i++)
+    /*for (int i = 0; i < masSize; i++)
     {
         mas[i].left += pixelMove;     
-        if(mas[i].left > 750) mas[i].left = -50;
+        if(mas[i].left > 850) mas[i].left = -50;
         mas[i].right = mas[i].left + 50;
         mas[i].bottom = mas[i].top + 50;
-    }
+    }*/
 }
