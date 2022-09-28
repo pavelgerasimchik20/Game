@@ -12,9 +12,9 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define IDM_QUIT 3
 //#define masSize 5
 #define clientAreaHor 900
-#define clientAreaHorF 1600
+//#define clientAreaHorF 1600
 #define clientAreaVert 600
-#define clientAreaVertF 1100
+//#define clientAreaVertF 1100
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 //RECT mas[masSize];
 RECT clientArea; 
@@ -29,12 +29,12 @@ typedef struct SHero {
     COLORREF brush;
 }THero;
 
-TPoint getPoint(float x, float y) {
-    TPoint point;
-    point.x = x;
-    point.y = y;
-    return point;
-}
+TPoint getPoint(float x, float y);
+void HeroInit(THero* hero, float x, float y, float width, float height);
+void DrawHero(THero hero, HDC dc);
+void WinInit(void);
+
+THero hero;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
@@ -70,6 +70,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
     //InitCoordinates();
+    WinInit();  
 
     Sleep(1500);
     while (1) {
@@ -79,7 +80,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             DispatchMessage(&msg);
         }
         else {
-            ItemMove();
+            //ItemMove();
             WinShow(dc,clientAreaHor,clientAreaVert);
             Sleep(1);
         }
@@ -102,7 +103,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     switch (msg) 
     {
     case WM_CREATE:
-        
         AddMenus(hwnd);
         RegisterHotKey(hwnd, ID_HOTKEY_QUIT, MOD_ALT, 0x51);  // ALT + Q  to close the window
         RegisterHotKey(hwnd, ID_HOTKEY_NEW, MOD_ALT, 0x4E);  // ALT + N  to restart
@@ -129,6 +129,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
             MessageBeep(MB_ICONINFORMATION);
             break;
         case IDM_FULL:
+
             ShowWindow(hwnd, SW_MAXIMIZE);
             break;
         case IDM_QUIT:
@@ -192,10 +193,12 @@ void WinShow(HDC dc, int hor, int vert) {
     HDC virtualDC = CreateCompatibleDC(dc); // virtual context
     HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
     SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
-       /* SelectObject(virtualDC, GetStockObject(DC_BRUSH));
+        SelectObject(virtualDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(virtualDC, RGB(25, 0, 12));
         Rectangle(virtualDC, 0, 0, hor, vert);
-        SelectObject(virtualDC, GetStockObject(DC_PEN));
+
+        DrawHero(hero, virtualDC);
+        /*SelectObject(virtualDC, GetStockObject(DC_PEN));
         SetDCBrushColor(virtualDC, RGB(100, 0, 0));
         for (int i = 0; i < masSize; i++)
         {
@@ -225,4 +228,30 @@ void ItemMove(){
         mas[i].right = mas[i].left + 50;
         mas[i].bottom = mas[i].top + 50;
     }*/
+}
+
+TPoint getPoint(float x, float y) {
+    TPoint point;
+    point.x = x;
+    point.y = y;
+    return point;
+}
+
+void HeroInit(THero* hero, float x, float y, float width, float height) {
+    hero->pos = getPoint(x, y);
+    hero->size = getPoint(width, height);
+    hero->brush = RGB(200, 150, 30);
+}
+
+void DrawHero(THero hero, HDC dc) {
+    SelectObject(dc, GetStockObject(DC_PEN));
+    SetDCPenColor(dc, RGB(0, 0, 0));
+    SelectObject(dc, GetStockObject(DC_BRUSH));
+    SetDCBrushColor(dc, hero.brush);
+    Rectangle(dc, (int)(hero.pos.x), (int)(hero.pos.y),
+        (int)(hero.pos.x + hero.size.x), (int)(hero.pos.y + hero.size.y));
+}
+
+void WinInit() {
+    HeroInit(&hero, 100, 100, 40, 40);
 }
