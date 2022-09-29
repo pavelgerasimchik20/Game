@@ -18,7 +18,6 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 //RECT mas[masSize];
 RECT clientArea; 
-TObject player;
 
 typedef struct SPoint {
     float x, y;
@@ -30,6 +29,8 @@ typedef struct SObject {
     TPoint speed;
     COLORREF brush;
 }TObject;
+
+TObject player;
 
 TPoint point(float x, float y);
 void ObjectInit(TObject* obj, float x, float y, float width, float height);
@@ -81,7 +82,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             DispatchMessage(&msg);
         }
         else {
-            //ItemMove();
+            WinMove();
             WinShow(dc,clientAreaHor,clientAreaVert);
             Sleep(1);
         }
@@ -210,6 +211,17 @@ void WinShow(HDC dc, int hor, int vert) {
         DeleteDC(virtualDC);
         DeleteObject(virtualBITMAP);
 }
+void PlayerControl() {
+    static int playerSpeed = 4;
+    player.speed.x = 0;
+    player.speed.y = 0;
+    if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
+    if (GetKeyState('S') < 0) player.speed.y = playerSpeed;
+    if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
+    if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
+    if ((player.speed.x != 0) && (player.speed.y != 0))
+        player.speed = point(player.speed.x * 0.7, player.speed.y * 0.7);
+}
 
 //void InitCoordinates() {
 //    srand(13);
@@ -223,7 +235,7 @@ void WinShow(HDC dc, int hor, int vert) {
 //}
 
 void WinMove(){
-
+    PlayerControl();
     ObjectMove(&player);
     /*for (int i = 0; i < masSize; i++)
     {
