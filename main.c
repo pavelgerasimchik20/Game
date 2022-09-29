@@ -18,30 +18,31 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 //RECT mas[masSize];
 RECT clientArea; 
+TObject player;
 
 typedef struct SPoint {
     float x, y;
 }TPoint;
 
-typedef struct SHero {
+typedef struct SObject {
     TPoint pos;
     TPoint size;
+    TPoint speed;
     COLORREF brush;
-}THero;
+}TObject;
 
-TPoint getPoint(float x, float y);
-void HeroInit(THero* hero, float x, float y, float width, float height);
-void DrawHero(THero hero, HDC dc);
+TPoint point(float x, float y);
+void ObjectInit(TObject* obj, float x, float y, float width, float height);
+void ObjectShow(TObject obj, HDC dc);
 void WinInit(void);
-
-THero hero;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
 void AddMenus(HWND);
 void WinShow(HDC dc, int hor, int vert);
 //void InitCoordinates(void);
-void ItemMove(void);
+void WinMove(void);
+void ObjectMove(TObject* obj);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -129,7 +130,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
             MessageBeep(MB_ICONINFORMATION);
             break;
         case IDM_FULL:
-
+            
             ShowWindow(hwnd, SW_MAXIMIZE);
             break;
         case IDM_QUIT:
@@ -143,6 +144,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
             DestroyWindow(hwnd);
         }
         if ((wParam) == ID_HOTKEY_NEW) {
+
             MessageBeep(MB_ICONINFORMATION);
         }
         break;
@@ -197,7 +199,7 @@ void WinShow(HDC dc, int hor, int vert) {
         SetDCBrushColor(virtualDC, RGB(25, 0, 12));
         Rectangle(virtualDC, 0, 0, hor, vert);
 
-        DrawHero(hero, virtualDC);
+        ObjectShow(player, virtualDC);
         /*SelectObject(virtualDC, GetStockObject(DC_PEN));
         SetDCBrushColor(virtualDC, RGB(100, 0, 0));
         for (int i = 0; i < masSize; i++)
@@ -220,7 +222,9 @@ void WinShow(HDC dc, int hor, int vert) {
 //    }
 //}
 
-void ItemMove(){
+void WinMove(){
+
+    ObjectMove(&player);
     /*for (int i = 0; i < masSize; i++)
     {
         mas[i].left += pixelMove;     
@@ -230,28 +234,34 @@ void ItemMove(){
     }*/
 }
 
-TPoint getPoint(float x, float y) {
+TPoint point(float x, float y) {
     TPoint point;
     point.x = x;
     point.y = y;
     return point;
 }
 
-void HeroInit(THero* hero, float x, float y, float width, float height) {
-    hero->pos = getPoint(x, y);
-    hero->size = getPoint(width, height);
-    hero->brush = RGB(200, 150, 30);
+void ObjectInit(TObject* obj, float x, float y, float width, float height) {
+    obj->pos = point(x, y);
+    obj->speed = point(0, 0);
+    obj->size = point(width, height);
+    obj->brush = RGB(200, 150, 30);
 }
 
-void DrawHero(THero hero, HDC dc) {
+void ObjectShow(TObject obj, HDC dc) {
     SelectObject(dc, GetStockObject(DC_PEN));
     SetDCPenColor(dc, RGB(0, 0, 0));
     SelectObject(dc, GetStockObject(DC_BRUSH));
-    SetDCBrushColor(dc, hero.brush);
-    Rectangle(dc, (int)(hero.pos.x), (int)(hero.pos.y),
-        (int)(hero.pos.x + hero.size.x), (int)(hero.pos.y + hero.size.y));
+    SetDCBrushColor(dc, obj.brush);
+    Rectangle(dc, (int)(obj.pos.x), (int)(obj.pos.y),
+        (int)(obj.pos.x + obj.size.x), (int)(obj.pos.y + obj.size.y));
 }
 
 void WinInit() {
-    HeroInit(&hero, 100, 100, 40, 40);
+    ObjectInit(&player, 100, 100, 40, 40);
+}
+
+void ObjectMove(TObject* obj) {
+    obj->pos.x += obj->speed.x;
+    obj->pos.y += obj->speed.y;
 }
