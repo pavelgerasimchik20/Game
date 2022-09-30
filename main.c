@@ -10,13 +10,9 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
-//#define masSize 5
-#define clientAreaHor 900
-//#define clientAreaHorF 1600
-#define clientAreaVert 600
-//#define clientAreaVertF 1100
+#define clientAreaHor 1200
+#define clientAreaVert 700
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
-//RECT mas[masSize];
 RECT clientArea; 
 
 typedef struct SPoint {
@@ -41,7 +37,6 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
 void AddMenus(HWND);
 void WinShow(HDC dc, int hor, int vert);
-//void InitCoordinates(void);
 void WinMove(void);
 void ObjectMove(TObject* obj);
 
@@ -65,18 +60,17 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     RegisterClassW(&wc);
     hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX) | WS_VISIBLE,
         0, 0, clientAreaHor, clientAreaVert, NULL, NULL, hInstance, NULL);
     HDC dc = GetDC(hwnd);  // getting context of the window
 
     ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
-    //InitCoordinates();
     WinInit();  
 
-    Sleep(1500);
+    Sleep(3000); // show welcome page
     while (1) {
-        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the mess queue
+        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the messages queue
             if (msg.message == WM_QUIT) break;
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -86,7 +80,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             WinShow(dc,clientAreaHor,clientAreaVert);
             Sleep(1);
         }
-        //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  that needs to spy on action codes
+        printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  //that needs to spy on action codes of messages 
     }
     return 0;
 }
@@ -100,7 +94,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     BITMAP bitmap;
     HDC hdcMem;
     HGDIOBJ oldBitmap;
-    
+
     if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
     switch (msg) 
     {
@@ -130,22 +124,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         case IDM_NEW:
             MessageBeep(MB_ICONINFORMATION);
             break;
-        case IDM_FULL:
-            
-            ShowWindow(hwnd, SW_MAXIMIZE);
-            break;
         case IDM_QUIT:
             SendMessage(hwnd, WM_CLOSE, 0, 0);
             break;
         }
         return 0;
+    case WM_KEYDOWN:
+        if (wParam == VK_ESCAPE) {
+            int ret = MessageBoxW(hwnd, L"Are you sure to quit?",
+                L"Message", MB_OKCANCEL);
+            if (ret == IDOK) {
+                SendMessage(hwnd, WM_CLOSE, 0, 0);
+            }
+        }
+        break;
 
     case WM_HOTKEY:
         if ((wParam) == ID_HOTKEY_QUIT) {
             DestroyWindow(hwnd);
         }
         if ((wParam) == ID_HOTKEY_NEW) {
-
             MessageBeep(MB_ICONINFORMATION);
         }
         break;
@@ -183,7 +181,7 @@ void AddMenus(HWND hwnd) {
     hMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New          (ALT + N)");
-    AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
+    //AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit         (ALT + Q)");
 
@@ -212,7 +210,7 @@ void WinShow(HDC dc, int hor, int vert) {
         DeleteObject(virtualBITMAP);
 }
 void PlayerControl() {
-    static int playerSpeed = 4;
+    static float playerSpeed = 4.0;
     player.speed.x = 0;
     player.speed.y = 0;
     if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
@@ -220,30 +218,12 @@ void PlayerControl() {
     if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
     if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
     if ((player.speed.x != 0) && (player.speed.y != 0))
-        player.speed = point(player.speed.x * 0.7, player.speed.y * 0.7);
+        player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
-
-//void InitCoordinates() {
-//    srand(13);
-//    for (int i = 0; i < masSize; i++)
-//    {
-//        mas[i].left = rand() % clientAreaHor - 50;
-//        mas[i].top = rand() % (clientAreaHor/2);
-//        mas[i].right = mas[i].left + 50;
-//        mas[i].bottom = mas[i].top + 50;
-//    }
-//}
 
 void WinMove(){
     PlayerControl();
     ObjectMove(&player);
-    /*for (int i = 0; i < masSize; i++)
-    {
-        mas[i].left += pixelMove;     
-        if(mas[i].left > 850) mas[i].left = -50;
-        mas[i].right = mas[i].left + 50;
-        mas[i].bottom = mas[i].top + 50;
-    }*/
 }
 
 TPoint point(float x, float y) {
