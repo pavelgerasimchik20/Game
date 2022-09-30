@@ -6,7 +6,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <windows.h>
 #include <tchar.h>
 #define ID_HOTKEY_QUIT 1
-#define ID_HOTKEY_NEW 2              //jndjfsnjsbdgjbsdjgbdsjgb,jsdng
+#define ID_HOTKEY_NEW 2
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
@@ -122,7 +122,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case IDM_NEW:
-            MessageBeep(MB_ICONINFORMATION);            //    jnjksdnfsdkfdsjsldgjsdxng
+            MessageBeep(MB_ICONINFORMATION);
             break;
         case IDM_QUIT:
             SendMessage(hwnd, WM_CLOSE, 0, 0);
