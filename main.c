@@ -5,8 +5,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
-#define ID_HOTKEY_QUIT 1
-#define ID_HOTKEY_NEW 2
+#define ID_HOTKEY_QUIT 1 // dfbn dsjgbj,dsgn
+#define ID_HOTKEY_NEW 2  // lmsdkfhskjdngkds
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
