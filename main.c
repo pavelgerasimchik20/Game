@@ -15,7 +15,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT clientArea; 
 
-typedef struct SPoint {
+typedef struct SPoint { //bla bla
     float x, y;
 }TPoint;
 
@@ -256,4 +256,4 @@ void WinInit() {
 void ObjectMove(TObject* obj) {
     obj->pos.x += obj->speed.x;
     obj->pos.y += obj->speed.y;
-}
+}// bla bla 
