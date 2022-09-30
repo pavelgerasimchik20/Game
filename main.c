@@ -5,8 +5,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
-#define ID_HOTKEY_QUIT 1 // dfbn dsjgbj,dsgn
-#define ID_HOTKEY_NEW 2  // lmsdkfhskjdngkds
+#define ID_HOTKEY_QUIT 1
+#define ID_HOTKEY_NEW 2
 #define IDM_NEW 1
 #define IDM_FULL 2
 #define IDM_QUIT 3
@@ -15,7 +15,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT clientArea; 
 
-typedef struct SPoint { //bla bla
+typedef struct SPoint {
     float x, y;
 }TPoint;
 
@@ -256,4 +256,4 @@ void WinInit() {
 void ObjectMove(TObject* obj) {
     obj->pos.x += obj->speed.x;
     obj->pos.y += obj->speed.y;
-}// bla bla 
+}
