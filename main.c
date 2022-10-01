@@ -14,6 +14,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define clientAreaVert 700
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT clientArea; 
+HBITMAP hbtm; // global var to draw btm
 
 typedef struct SPoint {
     float x, y;
@@ -39,6 +40,7 @@ void AddMenus(HWND);
 void WinShow(HDC dc, int hor, int vert);
 void WinMove(void);
 void ObjectMove(TObject* obj);
+void LoadImageBtm(HWND hwnd);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -88,12 +90,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam) {
 
-    static HBITMAP hbtm;
-    HDC hdc;
-    PAINTSTRUCT ps;
-    BITMAP bitmap;
-    HDC hdcMem;
-    HGDIOBJ oldBitmap;
+    
 
     if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
     switch (msg) 
@@ -106,17 +103,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         break;
 
     case WM_PAINT:
-        hbtm = (HBITMAP)LoadImageW(NULL, L"D:\\Pictures\\welcome.bmp",
-            IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-        hdc = BeginPaint(hwnd, &ps);
-        hdcMem = CreateCompatibleDC(hdc);
-        oldBitmap = SelectObject(hdcMem, hbtm);
-        GetObject(hbtm, sizeof(bitmap), &bitmap);
-        BitBlt(hdc, 5, 5, bitmap.bmWidth, bitmap.bmHeight,
-            hdcMem, 0, 0, SRCCOPY);
-        SelectObject(hdcMem, oldBitmap);
-        DeleteDC(hdcMem);
-        EndPaint(hwnd, &ps);
+        LoadImageBtm(hwnd);
         break;
 
     case WM_COMMAND:
@@ -256,4 +243,25 @@ void WinInit() {
 void ObjectMove(TObject* obj) {
     obj->pos.x += obj->speed.x;
     obj->pos.y += obj->speed.y;
+}
+
+void LoadImageBtm(HWND hwnd) {
+    
+    HDC hdc;
+    PAINTSTRUCT ps;
+    BITMAP bitmap;
+    HDC hdcMem;
+    HGDIOBJ oldBitmap;
+
+    hbtm = LoadImageW(NULL, L"D:\\Pictures\\welcome.bmp",
+        IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    hdc = BeginPaint(hwnd, &ps);
+    hdcMem = CreateCompatibleDC(hdc);
+    oldBitmap = SelectObject(hdcMem, hbtm);
+    GetObject(hbtm, sizeof(bitmap), &bitmap);
+    BitBlt(hdc, 5, 5, bitmap.bmWidth, bitmap.bmHeight,
+        hdcMem, 0, 0, SRCCOPY);
+    SelectObject(hdcMem, oldBitmap);
+    DeleteDC(hdcMem);
+    EndPaint(hwnd, &ps);
 }
