@@ -16,7 +16,6 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 RECT clientArea; 
 HBITMAP hbtm; // global var to draw btm
 wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
-wchar_t putinStr[] = L"D:\\Pictures\\putin.bmp";
 
 typedef struct SPoint {
     float x, y;
@@ -27,9 +26,12 @@ typedef struct SObject {
     TPoint size;
     TPoint speed;
     COLORREF brush;
-}TObject;
+    char oType;
+}TObject, *PObject;
 
 TObject player;
+PObject mas = NULL;
+int masCounter = 0;
 
 TPoint point(float x, float y);
 void ObjectInit(TObject* obj, float x, float y, float width, float height);
@@ -72,7 +74,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UpdateWindow(hwnd);
     WinInit();  
 
-    Sleep(3000); // show welcome page
+    Sleep(1000); // show welcome page
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the messages queue
             if (msg.message == WM_QUIT) break;
@@ -170,7 +172,7 @@ void AddMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New          (ALT + N)");
     //AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit         (ALT + Q)");
+    AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit      (ALT + Q) or ESC");
 
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Game menu");
     SetMenu(hwnd, hMenubar);
@@ -183,21 +185,20 @@ void WinShow(HDC dc, int hor, int vert) {
     SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
         SelectObject(virtualDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(virtualDC, RGB(25, 0, 12));
-        Rectangle(virtualDC, 0, 0, hor, vert);
-
+        Rectangle(virtualDC, 0, 0, hor, vert); 
         ObjectShow(player, virtualDC);
-        /*SelectObject(virtualDC, GetStockObject(DC_PEN));
-        SetDCBrushColor(virtualDC, RGB(100, 0, 0));
-        for (int i = 0; i < masSize; i++)
+
+        for (int i = 0; i < masCounter; i++)
         {
-            Rectangle(virtualDC, mas[i].left, mas[i].top, mas[i].right, mas[i].bottom);
-        }*/
+            ObjectShow(mas[i], virtualDC);
+        }
+
         BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
         DeleteDC(virtualDC);
         DeleteObject(virtualBITMAP);
 }
 void PlayerControl() {
-    static float playerSpeed = 4.0;
+    static float playerSpeed = 10.0;
     player.speed.x = 0;
     player.speed.y = 0;
     if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
@@ -220,11 +221,21 @@ TPoint point(float x, float y) {
     return point;
 }
 
-void ObjectInit(TObject* obj, float x, float y, float width, float height) {
+PObject NewObject() { //function NewObject cteate element of array and return (last) element 
+    masCounter++;
+    mas = realloc(mas, sizeof(*mas) * masCounter);
+    return mas + masCounter - 1;  
+}
+
+void ObjectInit(TObject* obj, float x, float y, float width, float height, char obType) {
     obj->pos = point(x, y);
     obj->speed = point(0, 0);
     obj->size = point(width, height);
     obj->brush = RGB(200, 150, 30);
+    obj->oType = obType;
+    if (obType == 'z') { 
+        obj->brush = RGB(110, 50, 130);
+    }
 }
 
 void ObjectShow(TObject obj, HDC dc) {
@@ -232,12 +243,22 @@ void ObjectShow(TObject obj, HDC dc) {
     SetDCPenColor(dc, RGB(0, 0, 0));
     SelectObject(dc, GetStockObject(DC_BRUSH));
     SetDCBrushColor(dc, obj.brush);
-    Rectangle(dc, (int)(obj.pos.x), (int)(obj.pos.y),
-        (int)(obj.pos.x + obj.size.x), (int)(obj.pos.y + obj.size.y));
+    
+    if(obj.oType == 'z'){
+        Rectangle(dc, (int)(obj.pos.x), (int)(obj.pos.y),
+            (int)(obj.pos.x + obj.size.x), (int)(obj.pos.y + obj.size.y));
+    }
+    else {
+        Ellipse(dc, (int)(obj.pos.x), (int)(obj.pos.y),
+            (int)(obj.pos.x + obj.size.x), (int)(obj.pos.y + obj.size.y));
+    }
 }
 
 void WinInit() {
-    ObjectInit(&player, 100, 100, 40, 40);
+    ObjectInit(&player, 100, 100, 40, 40,'i');
+
+    ObjectInit(NewObject(), 700, 100, 30, 30,'z');
+    ObjectInit(NewObject(), 500, 350, 30, 30,'z');
 }
 
 void ObjectMove(TObject* obj) {
@@ -254,7 +275,7 @@ void LoadImageBtm(HWND hwnd, wchar_t path[]) {
     HGDIOBJ oldBitmap;
 
     hbtm = LoadImageW(NULL, path,
-        IMAGE_BITMAP, 1200, 0, LR_LOADFROMFILE);
+        IMAGE_BITMAP, 1200, 550, LR_LOADFROMFILE);
     hdc = BeginPaint(hwnd, &ps);
     hdcMem = CreateCompatibleDC(hdc);
     oldBitmap = SelectObject(hdcMem, hbtm);
