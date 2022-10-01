@@ -15,6 +15,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT clientArea; 
 HBITMAP hbtm; // global var to draw btm
+wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
+wchar_t putinStr[] = L"D:\\Pictures\\putin.bmp";
 
 typedef struct SPoint {
     float x, y;
@@ -40,7 +42,7 @@ void AddMenus(HWND);
 void WinShow(HDC dc, int hor, int vert);
 void WinMove(void);
 void ObjectMove(TObject* obj);
-void LoadImageBtm(HWND hwnd);
+void LoadImageBtm(HWND hwnd, wchar_t path[]);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -90,8 +92,6 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam) {
 
-    
-
     if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
     switch (msg) 
     {
@@ -103,7 +103,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         break;
 
     case WM_PAINT:
-        LoadImageBtm(hwnd);
+        LoadImageBtm(hwnd, welcomeStr);
         break;
 
     case WM_COMMAND:
@@ -245,7 +245,7 @@ void ObjectMove(TObject* obj) {
     obj->pos.y += obj->speed.y;
 }
 
-void LoadImageBtm(HWND hwnd) {
+void LoadImageBtm(HWND hwnd, wchar_t path[]) {
     
     HDC hdc;
     PAINTSTRUCT ps;
@@ -253,8 +253,8 @@ void LoadImageBtm(HWND hwnd) {
     HDC hdcMem;
     HGDIOBJ oldBitmap;
 
-    hbtm = LoadImageW(NULL, L"D:\\Pictures\\welcome.bmp",
-        IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    hbtm = LoadImageW(NULL, path,
+        IMAGE_BITMAP, 1200, 0, LR_LOADFROMFILE);
     hdc = BeginPaint(hwnd, &ps);
     hdcMem = CreateCompatibleDC(hdc);
     oldBitmap = SelectObject(hdcMem, hbtm);
