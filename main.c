@@ -314,7 +314,14 @@ void ObjectMove(TObject* obj) {
 
     if (obj->oType == 'b') {
         obj->range -= obj->vecSpeed;
-        if (obj->range < 0) obj->isDel = TRUE;
+        if (obj->range < 0) obj->isDel = TRUE; // bullet will be deleted if range be exceeded
+        for (int i = 0; i < masCounter; i++)
+        {
+            if ((mas[i].oType == 'z') && (ObjectCollision(*obj, mas[i]))) {
+                mas[i].isDel = TRUE;
+                obj->isDel = TRUE;
+            }
+        }
     }
 }
 
