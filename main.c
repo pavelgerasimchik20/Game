@@ -5,14 +5,13 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
+#include <math.h> 
 #define ID_HOTKEY_QUIT 1
 #define ID_HOTKEY_NEW 2
 #define IDM_NEW 1
-#define IDM_FULL 2
 #define IDM_QUIT 3
 #define clientAreaHor 1200
 #define clientAreaVert 700
-#define pixelMove 5 // this var will responce for speed of obj   ***TODO pick mode ???***
 RECT clientArea; 
 HBITMAP hbtm; // global var to draw btm
 wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
@@ -34,7 +33,7 @@ PObject mas = NULL;
 int masCounter = 0;
 
 TPoint point(float x, float y);
-void ObjectInit(TObject* obj, float x, float y, float width, float height);
+void ObjectInit(TObject* obj, float x, float y, float width, float height, char type);
 void ObjectShow(TObject obj, HDC dc);
 void WinInit(void);
 
@@ -45,6 +44,7 @@ void WinShow(HDC dc, int hor, int vert);
 void WinMove(void);
 void ObjectMove(TObject* obj);
 void LoadImageBtm(HWND hwnd, wchar_t path[]);
+void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -198,13 +198,17 @@ void WinShow(HDC dc, int hor, int vert) {
         DeleteObject(virtualBITMAP);
 }
 void PlayerControl() {
-    static float playerSpeed = 10.0;
+    static float playerSpeed = 20.0;
     player.speed.x = 0;
     player.speed.y = 0;
     if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
     if (GetKeyState('S') < 0) player.speed.y = playerSpeed;
     if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
     if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
+    if (player.pos.x < -20) player.pos.x = 0;
+    if (player.pos.x > 1170) player.pos.x = 1150;
+    if (player.pos.y < -20) player.pos.y = 0;
+    if (player.pos.y > 620) player.pos.y = 600;
     if ((player.speed.x != 0) && (player.speed.y != 0))
         player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
@@ -212,6 +216,10 @@ void PlayerControl() {
 void WinMove(){
     PlayerControl();
     ObjectMove(&player);
+    for (int i = 0; i < masCounter; i++)
+    {
+        ObjectMove(mas + i);
+    }
 }
 
 TPoint point(float x, float y) {
@@ -262,6 +270,12 @@ void WinInit() {
 }
 
 void ObjectMove(TObject* obj) {
+    if (obj->oType == 'z') {
+        if (rand() % 40 == 1) {
+            static float enemySpeed = 1.5;
+            ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
+        }
+    }
     obj->pos.x += obj->speed.x;
     obj->pos.y += obj->speed.y;
 }
@@ -285,4 +299,14 @@ void LoadImageBtm(HWND hwnd, wchar_t path[]) {
     SelectObject(hdcMem, oldBitmap);
     DeleteDC(hdcMem);
     EndPaint(hwnd, &ps);
+}
+
+void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed) {
+    
+    TPoint xyLen = point(xPos - obj->pos.x, yPos - obj->pos.y); // found length between obj and destination point
+    float dxy = (float) sqrt(xyLen.x * xyLen.x + xyLen.y * xyLen.y);  // directly path
+    obj->speed.x = xyLen.x / dxy * vecSpeed;
+    obj->speed.y = xyLen.y / dxy * vecSpeed;
+
+
 }
