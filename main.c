@@ -26,6 +26,8 @@ typedef struct SObject {
     TPoint speed;
     COLORREF brush;
     char oType;
+    float range, vecSpeed;
+    BOOL isDel;
 }TObject, *PObject;
 
 TObject player;
@@ -45,6 +47,9 @@ void WinMove(void);
 void ObjectMove(TObject* obj);
 void LoadImageBtm(HWND hwnd, wchar_t path[]);
 void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed);
+void AddBullet(float xPos, float yPos, float x, float y);
+BOOL ObjectCollision(TObject o1, TObject o2);
+void DelObjects(void);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
@@ -95,6 +100,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam) {
 
     if (msg == WM_SIZE) GetClientRect(hwnd, &clientArea);
+    else if (msg == WM_LBUTTONDOWN) {
+        int xPos = LOWORD(lParam);
+        int yPos = HIWORD(lParam);
+        AddBullet(player.pos.x + player.size.x/2, 
+                  player.pos.y + player.size.y/2,
+                  (float) xPos, (float) yPos);
+    }
+
     switch (msg) 
     {
     case WM_CREATE:
@@ -220,6 +233,7 @@ void WinMove(){
     {
         ObjectMove(mas + i);
     }
+    DelObjects();
 }
 
 TPoint point(float x, float y) {
@@ -235,14 +249,33 @@ PObject NewObject() { //function NewObject cteate element of array and return (l
     return mas + masCounter - 1;  
 }
 
+void DelObjects() {
+    int i = 0;
+    while (i < masCounter)
+    {
+        if (mas[i].isDel) {
+            masCounter--;
+            mas[i] = mas[masCounter];
+            mas = realloc(mas, sizeof(*mas) * masCounter);
+        }
+        else {
+            i++;
+        }
+    }
+}
+
 void ObjectInit(TObject* obj, float x, float y, float width, float height, char obType) {
     obj->pos = point(x, y);
     obj->speed = point(0, 0);
     obj->size = point(width, height);
     obj->brush = RGB(200, 150, 30);
     obj->oType = obType;
+    obj->isDel = FALSE;
     if (obType == 'z') { 
         obj->brush = RGB(110, 50, 130);
+    }
+    if (obType == 'b') {
+        obj->brush = RGB(220, 0, 10);
     }
 }
 
@@ -278,6 +311,11 @@ void ObjectMove(TObject* obj) {
     }
     obj->pos.x += obj->speed.x;
     obj->pos.y += obj->speed.y;
+
+    if (obj->oType == 'b') {
+        obj->range -= obj->vecSpeed;
+        if (obj->range < 0) obj->isDel = TRUE;
+    }
 }
 
 void LoadImageBtm(HWND hwnd, wchar_t path[]) {
@@ -307,6 +345,17 @@ void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed) {
     float dxy = (float) sqrt(xyLen.x * xyLen.x + xyLen.y * xyLen.y);  // directly path
     obj->speed.x = xyLen.x / dxy * vecSpeed;
     obj->speed.y = xyLen.y / dxy * vecSpeed;
+    obj->vecSpeed = vecSpeed;
+}
 
+void AddBullet(float xPos, float yPos, float x, float y) {
+    PObject obj = NewObject();
+    ObjectInit(obj, xPos, yPos, 10, 10, 'b');
+    ObjectSetDestPoint(obj, x, y, 15);
+    obj->range = 300;
+}
 
+BOOL ObjectCollision(TObject o1, TObject o2) {
+    return ((o1.pos.x + o1.size.x) > o2.pos.x) && (o1.pos.x < (o2.pos.x + o2.size.x)) &&
+        ((o1.pos.y + o1.size.y) > o2.pos.y) && (o1.pos.y < (o2.pos.y + o2.size.y));
 }
