@@ -7,8 +7,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <tchar.h>
 #include <math.h> 
 #define ID_HOTKEY_QUIT 1
-#define ID_HOTKEY_NEXT_LEVEL 2
-#define IDM_NEXT 1
+#define ID_HOTKEY_NEWGAME 2
+#define IDM_NEW 1
 #define IDM_QUIT 3
 #define clientAreaHor 1200
 #define clientAreaVert 700
@@ -116,7 +116,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     case WM_CREATE:
         AddMenus(hwnd);
         RegisterHotKey(hwnd, ID_HOTKEY_QUIT, MOD_ALT, 0x51);  // ALT + Q  to close the window
-        RegisterHotKey(hwnd, ID_HOTKEY_NEXT_LEVEL, MOD_ALT, 0x4E);  // ALT + N  to restart
+        RegisterHotKey(hwnd, ID_HOTKEY_NEWGAME, MOD_ALT, 0x4E);  // ALT + N  to restart
         CenterWindow(hwnd);
         break;
 
@@ -126,7 +126,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
-        case IDM_NEXT:
+        case IDM_NEW:
             needNewGame = TRUE;
             MessageBeep(MB_ICONINFORMATION);
             break;
@@ -146,7 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         break;
 
     case WM_HOTKEY:
-        if ((wParam) == ID_HOTKEY_NEXT_LEVEL) {
+        if ((wParam) == ID_HOTKEY_NEWGAME) {
             needNewGame = TRUE;
             MessageBeep(MB_ICONINFORMATION);
         }
@@ -157,7 +157,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     case WM_DESTROY:
         DeleteObject(hbtm);
         UnregisterHotKey(hwnd, ID_HOTKEY_QUIT);
-        UnregisterHotKey(hwnd, ID_HOTKEY_NEXT_LEVEL);
+        UnregisterHotKey(hwnd, ID_HOTKEY_NEWGAME);
         PostQuitMessage(EXIT_SUCCESS);    
         break;
     }
@@ -187,7 +187,7 @@ void AddMenus(HWND hwnd) {
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
 
-    AppendMenuW(hMenu, MF_STRING, IDM_NEXT, L"&Next level      (ALT + N)");
+    AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New game      (ALT + N)");
     //AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit      (ALT + Q) or ESC");
