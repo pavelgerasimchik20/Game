@@ -13,10 +13,6 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define clientAreaHor 1200
 #define clientAreaVert 700
 
-RECT clientArea; 
-HBITMAP hbtm; // global var to draw btm
-wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
-
 typedef struct SPoint {
     float x, y;
 }TPoint;
@@ -34,13 +30,16 @@ typedef struct SObject {
 TObject player;
 PObject mas = NULL;
 int masCounter = 0;
+RECT clientArea;
+HBITMAP hbtm; // global var to draw btm
+wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
+BOOL needNewGame = FALSE;
 
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 TPoint point(float x, float y);
 void ObjectInit(TObject* obj, float x, float y, float width, float height, char type);
 void ObjectShow(TObject obj, HDC dc);
 void WinInit(void);
-
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CenterWindow(HWND);
 void AddMenus(HWND);
 void WinShow(HDC dc, int hor, int vert);
@@ -128,6 +127,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case IDM_NEXT:
+            needNewGame = TRUE;
             MessageBeep(MB_ICONINFORMATION);
             break;
         case IDM_QUIT:
@@ -146,11 +146,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         break;
 
     case WM_HOTKEY:
+        if ((wParam) == ID_HOTKEY_NEXT_LEVEL) {
+            needNewGame = TRUE;
+            MessageBeep(MB_ICONINFORMATION);
+        }
         if ((wParam) == ID_HOTKEY_QUIT) {
             DestroyWindow(hwnd);
-        }
-        if ((wParam) == ID_HOTKEY_NEXT_LEVEL) {
-            MessageBeep(MB_ICONINFORMATION);
         }
         break;
     case WM_DESTROY:
@@ -242,6 +243,8 @@ void GenerateEnemies() {
     }
 }
 void WinMove(){
+
+    if (needNewGame) WinInit();
     PlayerControl();
     ObjectMove(&player);
     for (int i = 0; i < masCounter; i++)
@@ -313,10 +316,10 @@ void ObjectShow(TObject obj, HDC dc) {
 }
 
 void WinInit() {
+    needNewGame = FALSE;
+    masCounter = 0;
+    mas = realloc(mas, 0); // cleaning mas in the begin of the game
     ObjectInit(&player, 100, 100, 40, 40,'i');
-
-    ObjectInit(NewObject(), 700, 100, 25, 25,'z');
-    ObjectInit(NewObject(), 500, 350, 25, 25,'z');
 }
 
 void ObjectMove(TObject* obj) {
@@ -324,6 +327,9 @@ void ObjectMove(TObject* obj) {
         if (rand() % 20 == 1) {
             static float enemySpeed = 9.0;
             ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
+        }
+        if(ObjectCollision(*obj, player)) {
+            needNewGame = TRUE;
         }
     }
     obj->pos.x += obj->speed.x;
