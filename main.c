@@ -7,11 +7,12 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <tchar.h>
 #include <math.h> 
 #define ID_HOTKEY_QUIT 1
-#define ID_HOTKEY_NEW 2
-#define IDM_NEW 1
+#define ID_HOTKEY_NEXT_LEVEL 2
+#define IDM_NEXT 1
 #define IDM_QUIT 3
 #define clientAreaHor 1200
 #define clientAreaVert 700
+
 RECT clientArea; 
 HBITMAP hbtm; // global var to draw btm
 wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
@@ -50,10 +51,12 @@ void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed);
 void AddBullet(float xPos, float yPos, float x, float y);
 BOOL ObjectCollision(TObject o1, TObject o2);
 void DelObjects(void);
+void GenerateEnemies(void);
+void AddEnemy(float, float);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
-
+    
     MSG msg;
     HWND hwnd;
     WNDCLASSW wc;
@@ -66,13 +69,14 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wc.hbrBackground = GetSysColorBrush(COLOR_3DHILIGHT);
     wc.lpszMenuName = NULL;
     wc.lpfnWndProc = WndProc;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hCursor = LoadCursorW(NULL, IDC_CROSS);
     wc.hIcon = LoadIcon(NULL, IDI_ERROR);
 
     RegisterClassW(&wc);
     hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
         WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX) | WS_VISIBLE,
         0, 0, clientAreaHor, clientAreaVert, NULL, NULL, hInstance, NULL);
+    
     HDC dc = GetDC(hwnd);  // getting context of the window
 
     ShowWindow(hwnd, SW_SHOWNORMAL);
@@ -91,7 +95,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             WinShow(dc,clientAreaHor,clientAreaVert);
             Sleep(1);
         }
-        printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  //that needs to spy on action codes of messages 
+        //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  //that needs to spy on action codes of messages 
     }
     return 0;
 }
@@ -113,7 +117,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     case WM_CREATE:
         AddMenus(hwnd);
         RegisterHotKey(hwnd, ID_HOTKEY_QUIT, MOD_ALT, 0x51);  // ALT + Q  to close the window
-        RegisterHotKey(hwnd, ID_HOTKEY_NEW, MOD_ALT, 0x4E);  // ALT + N  to restart
+        RegisterHotKey(hwnd, ID_HOTKEY_NEXT_LEVEL, MOD_ALT, 0x4E);  // ALT + N  to restart
         CenterWindow(hwnd);
         break;
 
@@ -123,7 +127,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
-        case IDM_NEW:
+        case IDM_NEXT:
             MessageBeep(MB_ICONINFORMATION);
             break;
         case IDM_QUIT:
@@ -145,14 +149,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         if ((wParam) == ID_HOTKEY_QUIT) {
             DestroyWindow(hwnd);
         }
-        if ((wParam) == ID_HOTKEY_NEW) {
+        if ((wParam) == ID_HOTKEY_NEXT_LEVEL) {
             MessageBeep(MB_ICONINFORMATION);
         }
         break;
     case WM_DESTROY:
         DeleteObject(hbtm);
         UnregisterHotKey(hwnd, ID_HOTKEY_QUIT);
-        UnregisterHotKey(hwnd, ID_HOTKEY_NEW);
+        UnregisterHotKey(hwnd, ID_HOTKEY_NEXT_LEVEL);
         PostQuitMessage(EXIT_SUCCESS);    
         break;
     }
@@ -182,7 +186,7 @@ void AddMenus(HWND hwnd) {
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
 
-    AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New          (ALT + N)");
+    AppendMenuW(hMenu, MF_STRING, IDM_NEXT, L"&Next level      (ALT + N)");
     //AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit      (ALT + Q) or ESC");
@@ -197,7 +201,7 @@ void WinShow(HDC dc, int hor, int vert) {
     HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
     SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
         SelectObject(virtualDC, GetStockObject(DC_BRUSH));
-        SetDCBrushColor(virtualDC, RGB(25, 0, 12));
+        SetDCBrushColor(virtualDC, RGB(25, 25, 25));
         Rectangle(virtualDC, 0, 0, hor, vert); 
         ObjectShow(player, virtualDC);
 
@@ -211,7 +215,7 @@ void WinShow(HDC dc, int hor, int vert) {
         DeleteObject(virtualBITMAP);
 }
 void PlayerControl() {
-    static float playerSpeed = 20.0;
+    static float playerSpeed = 10.0;
     player.speed.x = 0;
     player.speed.y = 0;
     if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
@@ -225,7 +229,18 @@ void PlayerControl() {
     if ((player.speed.x != 0) && (player.speed.y != 0))
         player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
-
+void GenerateEnemies() {
+    static int rad = 500;
+    int pos1 = (rand() % 2 == 0 ? -rad : rad);
+    int pos2 = (rand() % (rad * 2) - rad);
+    int k = rand() % 100;
+    if (k == 1) {
+        AddEnemy((float)(player.pos.x + pos1), (float)(player.pos.y + pos2));
+    }
+    if (k == 2) {
+        AddEnemy((float)player.pos.x + pos2, (float)player.pos.y + pos1);
+    }
+}
 void WinMove(){
     PlayerControl();
     ObjectMove(&player);
@@ -233,6 +248,7 @@ void WinMove(){
     {
         ObjectMove(mas + i);
     }
+    GenerateEnemies();
     DelObjects();
 }
 
@@ -264,6 +280,7 @@ void DelObjects() {
     }
 }
 
+
 void ObjectInit(TObject* obj, float x, float y, float width, float height, char obType) {
     obj->pos = point(x, y);
     obj->speed = point(0, 0);
@@ -272,7 +289,7 @@ void ObjectInit(TObject* obj, float x, float y, float width, float height, char 
     obj->oType = obType;
     obj->isDel = FALSE;
     if (obType == 'z') { 
-        obj->brush = RGB(110, 50, 130);
+        obj->brush = RGB(110, 50, 20);
     }
     if (obType == 'b') {
         obj->brush = RGB(220, 0, 10);
@@ -281,7 +298,7 @@ void ObjectInit(TObject* obj, float x, float y, float width, float height, char 
 
 void ObjectShow(TObject obj, HDC dc) {
     SelectObject(dc, GetStockObject(DC_PEN));
-    SetDCPenColor(dc, RGB(0, 0, 0));
+    SetDCPenColor(dc, RGB(255, 0, 0));
     SelectObject(dc, GetStockObject(DC_BRUSH));
     SetDCBrushColor(dc, obj.brush);
     
@@ -298,14 +315,14 @@ void ObjectShow(TObject obj, HDC dc) {
 void WinInit() {
     ObjectInit(&player, 100, 100, 40, 40,'i');
 
-    ObjectInit(NewObject(), 700, 100, 30, 30,'z');
-    ObjectInit(NewObject(), 500, 350, 30, 30,'z');
+    ObjectInit(NewObject(), 700, 100, 25, 25,'z');
+    ObjectInit(NewObject(), 500, 350, 25, 25,'z');
 }
 
 void ObjectMove(TObject* obj) {
     if (obj->oType == 'z') {
-        if (rand() % 40 == 1) {
-            static float enemySpeed = 1.5;
+        if (rand() % 20 == 1) {
+            static float enemySpeed = 9.0;
             ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
         }
     }
@@ -317,7 +334,7 @@ void ObjectMove(TObject* obj) {
         if (obj->range < 0) obj->isDel = TRUE; // bullet will be deleted if range be exceeded
         for (int i = 0; i < masCounter; i++)
         {
-            if ((mas[i].oType == 'z') && (ObjectCollision(*obj, mas[i]))) {
+            if ((mas[i].oType == 'z') && (ObjectCollision(*obj, mas[i]))) { 
                 mas[i].isDel = TRUE;
                 obj->isDel = TRUE;
             }
@@ -358,11 +375,13 @@ void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed) {
 void AddBullet(float xPos, float yPos, float x, float y) {
     PObject obj = NewObject();
     ObjectInit(obj, xPos, yPos, 10, 10, 'b');
-    ObjectSetDestPoint(obj, x, y, 15);
-    obj->range = 300;
+    ObjectSetDestPoint(obj, x, y, 20);
+    obj->range = 500;
 }
 
 BOOL ObjectCollision(TObject o1, TObject o2) {
     return ((o1.pos.x + o1.size.x) > o2.pos.x) && (o1.pos.x < (o2.pos.x + o2.size.x)) &&
         ((o1.pos.y + o1.size.y) > o2.pos.y) && (o1.pos.y < (o2.pos.y + o2.size.y));
 }
+
+void AddEnemy(float a, float b) { ObjectInit(NewObject(), a, b, 25, 25, 'z'); }
