@@ -219,8 +219,8 @@ void PlayerControl() {
     static float playerSpeed = 10.0;
     player.speed.x = 0;
     player.speed.y = 0;
-    if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
-    if (GetKeyState('S') < 0) player.speed.y = playerSpeed;
+    /*if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
+    if (GetKeyState('S') < 0) player.speed.y = playerSpeed;*/
     if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
     if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
     if (player.pos.x < -20) player.pos.x = 0;
@@ -319,7 +319,7 @@ void WinInit() {
     needNewGame = FALSE;
     masCounter = 0;
     mas = realloc(mas, 0); // cleaning mas in the begin of the game
-    ObjectInit(&player, 100, 100, 40, 40,'i');
+    ObjectInit(&player, clientAreaHor/2, clientAreaVert-125, 40, 40,'i');
 }
 
 void ObjectMove(TObject* obj) {
