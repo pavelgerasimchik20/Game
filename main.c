@@ -231,7 +231,8 @@ void PlayerControl() {
         player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
 void GenerateEnemies() {
-    static int rad = 500;
+    // for "Catch me if you can"
+    /*static int rad = 500;
     int pos1 = (rand() % 2 == 0 ? -rad : rad);
     int pos2 = (rand() % (rad * 2) - rad);
     int k = rand() % 100;
@@ -240,6 +241,17 @@ void GenerateEnemies() {
     }
     if (k == 2) {
         AddEnemy((float)player.pos.x + pos2, (float)player.pos.y + pos1);
+    }*/
+
+    // for "Star Wars"
+    int posX = (rand() % 2 == 0 ? -100 : 300);
+    //int posY = 0;
+    int k = rand() % 100;
+    if (k == 1) {
+        AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
+    }
+    if (k == 2) {
+        AddEnemy((float)(player.pos.x ), (float)(player.pos.y + 700));
     }
 }
 void WinMove(){
@@ -328,6 +340,14 @@ void ObjectMove(TObject* obj) {
             static float enemySpeed = 9.0;
             ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
         }
+
+            for (int i = 0; i < masCounter; i++)
+            {
+                if (obj->pos.y > 600) {
+                    obj->isDel = TRUE;
+                }
+            }
+
         if(ObjectCollision(*obj, player)) {
             needNewGame = TRUE;
         }
@@ -382,7 +402,7 @@ void AddBullet(float xPos, float yPos, float x, float y) {
     PObject obj = NewObject();
     ObjectInit(obj, xPos, yPos, 10, 10, 'b');
     ObjectSetDestPoint(obj, x, y, 20);
-    obj->range = 500;
+    obj->range = 600;
 }
 
 BOOL ObjectCollision(TObject o1, TObject o2) {
