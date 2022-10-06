@@ -1,1 +1,12 @@
-a space game in which a spaceship shoots at oncoming enemies 
+A space game in which a SpAcE_ship shoots at oncoming enemies 
+
+†        †    †
+  †    †     †
+†  †     †    †
+ †       †    † 
+†    †    †   †
+      .
+      .
+      .
+      /\
+     |__|
