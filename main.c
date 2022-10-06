@@ -249,7 +249,7 @@ void GenerateEnemies() {
         posX = 150;
     }
     //int posY = 0;
-    int k = rand() % 100;
+    int k = rand() % 20;  // takt en cr
     if (k == 1) {
         AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
     }
@@ -341,7 +341,7 @@ void ObjectMove(TObject* obj) {
     if (obj->oType == 'z') {
         if (rand() % 50 == 1) {
             static float enemySpeed = 9.0;
-            ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
+            ObjectSetDestPoint(obj, player.pos.x, 700, enemySpeed);
         }
 
             for (int i = 0; i < masCounter; i++)
@@ -385,7 +385,7 @@ void LoadImageBtm(HWND hwnd, wchar_t path[]) {
     hdcMem = CreateCompatibleDC(hdc);
     oldBitmap = SelectObject(hdcMem, hbtm);
     GetObject(hbtm, sizeof(bitmap), &bitmap);
-    BitBlt(hdc, 5, 5, bitmap.bmWidth, bitmap.bmHeight,
+    BitBlt(hdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight,
         hdcMem, 0, 0, SRCCOPY);
     SelectObject(hdcMem, oldBitmap);
     DeleteDC(hdcMem);
