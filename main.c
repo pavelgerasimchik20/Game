@@ -72,7 +72,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wc.hIcon = LoadIcon(NULL, IDI_ERROR);
 
     RegisterClassW(&wc);
-    hwnd = CreateWindowW(wc.lpszClassName, L"Catch me if you can",
+    hwnd = CreateWindowW(wc.lpszClassName, L"Star Wars",
         WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX) | WS_VISIBLE,
         0, 0, clientAreaHor, clientAreaVert, NULL, NULL, hInstance, NULL);
     
@@ -82,7 +82,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UpdateWindow(hwnd);
     WinInit();  
 
-    Sleep(1000); // show welcome page
+    Sleep(3000); // show welcome page
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the messages queue
             if (msg.message == WM_QUIT) break;
@@ -244,7 +244,10 @@ void GenerateEnemies() {
     }*/
 
     // for "Star Wars"
-    int posX = (rand() % 2 == 0 ? -100 : 300);
+    int posX = (rand() % 2 == 0 ? -200 : 200);
+    if (player.pos.x < 200) {
+        posX = 150;
+    }
     //int posY = 0;
     int k = rand() % 100;
     if (k == 1) {
@@ -336,7 +339,7 @@ void WinInit() {
 
 void ObjectMove(TObject* obj) {
     if (obj->oType == 'z') {
-        if (rand() % 20 == 1) {
+        if (rand() % 50 == 1) {
             static float enemySpeed = 9.0;
             ObjectSetDestPoint(obj, player.pos.x, player.pos.y, enemySpeed);
         }
@@ -377,7 +380,7 @@ void LoadImageBtm(HWND hwnd, wchar_t path[]) {
     HGDIOBJ oldBitmap;
 
     hbtm = LoadImageW(NULL, path,
-        IMAGE_BITMAP, 1200, 550, LR_LOADFROMFILE);
+        IMAGE_BITMAP, 1200, 700, LR_LOADFROMFILE);
     hdc = BeginPaint(hwnd, &ps);
     hdcMem = CreateCompatibleDC(hdc);
     oldBitmap = SelectObject(hdcMem, hbtm);
