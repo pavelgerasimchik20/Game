@@ -25,7 +25,7 @@ typedef struct SObject {
     char oType;
     float range, vecSpeed;
     BOOL isDel;
-}TObject, *PObject;
+}TObject, * PObject;
 
 TObject player;
 PObject mas = NULL;
@@ -55,12 +55,12 @@ void AddEnemy(float, float);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
-    
+
     MSG msg;
     HWND hwnd;
     WNDCLASSW wc;
 
-    wc.style = CS_HREDRAW | CS_VREDRAW ; // vertical and horizontal redrawing
+    wc.style = CS_HREDRAW | CS_VREDRAW; // vertical and horizontal redrawing
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.lpszClassName = L"Game field";
@@ -75,12 +75,12 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     hwnd = CreateWindowW(wc.lpszClassName, L"Star Wars",
         WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX) | WS_VISIBLE,
         0, 0, clientAreaHor, clientAreaVert, NULL, NULL, hInstance, NULL);
-    
+
     HDC dc = GetDC(hwnd);  // getting context of the window
 
     ShowWindow(hwnd, SW_SHOWNORMAL);
     UpdateWindow(hwnd);
-    WinInit();  
+    WinInit();
 
     Sleep(3000); // show welcome page
     while (1) {
@@ -91,7 +91,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         else {
             WinMove();
-            WinShow(dc,clientAreaHor,clientAreaVert);
+            WinShow(dc, clientAreaHor, clientAreaVert);
             Sleep(1);
         }
         //printf("msg.message: %d & msg.wParam: %d\n", msg.message, msg.wParam);  //that needs to spy on action codes of messages 
@@ -106,12 +106,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     else if (msg == WM_LBUTTONDOWN) {
         int xPos = LOWORD(lParam);
         int yPos = HIWORD(lParam);
-        AddBullet(player.pos.x + player.size.x/2, 
-                  player.pos.y + player.size.y/2,
-                  (float) xPos, (float) yPos);
+        AddBullet(player.pos.x + player.size.x / 2,
+            player.pos.y + player.size.y / 2,
+            (float)xPos, (float)yPos);
     }
 
-    switch (msg) 
+    switch (msg)
     {
     case WM_CREATE:
         AddMenus(hwnd);
@@ -158,7 +158,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         DeleteObject(hbtm);
         UnregisterHotKey(hwnd, ID_HOTKEY_QUIT);
         UnregisterHotKey(hwnd, ID_HOTKEY_NEWGAME);
-        PostQuitMessage(EXIT_SUCCESS);    
+        PostQuitMessage(EXIT_SUCCESS);
         break;
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -188,7 +188,6 @@ void AddMenus(HWND hwnd) {
     hMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, IDM_NEW, L"&New game      (ALT + N)");
-    //AppendMenuW(hMenu, MF_STRING, IDM_FULL, L"&Full screen");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING, IDM_QUIT, L"&Quit      (ALT + Q) or ESC");
 
@@ -201,26 +200,24 @@ void WinShow(HDC dc, int hor, int vert) {
     HDC virtualDC = CreateCompatibleDC(dc); // virtual context
     HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
     SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
-        SelectObject(virtualDC, GetStockObject(DC_BRUSH));
-        SetDCBrushColor(virtualDC, RGB(25, 25, 25));
-        Rectangle(virtualDC, 0, 0, hor, vert); 
-        ObjectShow(player, virtualDC);
+    /*SelectObject(virtualDC, GetStockObject(DC_BRUSH));
+    SetDCBrushColor(virtualDC, RGB(25, 25, 25));
+    Rectangle(virtualDC, 0, 0, hor, vert);*/
+    ObjectShow(player, virtualDC);
 
-        for (int i = 0; i < masCounter; i++)
-        {
-            ObjectShow(mas[i], virtualDC);
-        }
+    for (int i = 0; i < masCounter; i++)
+    {
+        ObjectShow(mas[i], virtualDC);
+    }
 
-        BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
-        DeleteDC(virtualDC);
-        DeleteObject(virtualBITMAP);
+    BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
+    DeleteDC(virtualDC);
+    DeleteObject(virtualBITMAP);
 }
 void PlayerControl() {
     static float playerSpeed = 10.0;
     player.speed.x = 0;
     player.speed.y = 0;
-    /*if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;
-    if (GetKeyState('S') < 0) player.speed.y = playerSpeed;*/
     if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
     if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
     if (player.pos.x < -20) player.pos.x = 0;
@@ -231,19 +228,7 @@ void PlayerControl() {
         player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
 void GenerateEnemies() {
-    // for "Catch me if you can"
-    /*static int rad = 500;
-    int pos1 = (rand() % 2 == 0 ? -rad : rad);
-    int pos2 = (rand() % (rad * 2) - rad);
-    int k = rand() % 100;
-    if (k == 1) {
-        AddEnemy((float)(player.pos.x + pos1), (float)(player.pos.y + pos2));
-    }
-    if (k == 2) {
-        AddEnemy((float)player.pos.x + pos2, (float)player.pos.y + pos1);
-    }*/
-
-    // for "Star Wars"
+   
     int posX = (rand() % 2 == 0 ? -200 : 200);
     if (player.pos.x < 200) {
         posX = 150;
@@ -254,10 +239,10 @@ void GenerateEnemies() {
         AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
     }
     if (k == 2) {
-        AddEnemy((float)(player.pos.x ), (float)(player.pos.y + 700));
+        AddEnemy((float)(player.pos.x), (float)(player.pos.y + 700));
     }
 }
-void WinMove(){
+void WinMove() {
 
     if (needNewGame) WinInit();
     PlayerControl();
@@ -280,7 +265,7 @@ TPoint point(float x, float y) {
 PObject NewObject() { //function NewObject cteate element of array and return (last) element 
     masCounter++;
     mas = realloc(mas, sizeof(*mas) * masCounter);
-    return mas + masCounter - 1;  
+    return mas + masCounter - 1;
 }
 
 void DelObjects() {
@@ -306,7 +291,7 @@ void ObjectInit(TObject* obj, float x, float y, float width, float height, char 
     obj->brush = RGB(200, 150, 30);
     obj->oType = obType;
     obj->isDel = FALSE;
-    if (obType == 'z') { 
+    if (obType == 'z') {
         obj->brush = RGB(110, 50, 20);
     }
     if (obType == 'b') {
@@ -319,8 +304,8 @@ void ObjectShow(TObject obj, HDC dc) {
     SetDCPenColor(dc, RGB(255, 0, 0));
     SelectObject(dc, GetStockObject(DC_BRUSH));
     SetDCBrushColor(dc, obj.brush);
-    
-    if(obj.oType == 'z'){
+
+    if (obj.oType == 'z') {
         Rectangle(dc, (int)(obj.pos.x), (int)(obj.pos.y),
             (int)(obj.pos.x + obj.size.x), (int)(obj.pos.y + obj.size.y));
     }
@@ -334,7 +319,7 @@ void WinInit() {
     needNewGame = FALSE;
     masCounter = 0;
     mas = realloc(mas, 0); // cleaning mas in the begin of the game
-    ObjectInit(&player, clientAreaHor/2, clientAreaVert-125, 40, 40,'i');
+    ObjectInit(&player, clientAreaHor / 2, clientAreaVert - 125, 40, 40, 'i');
 }
 
 void ObjectMove(TObject* obj) {
@@ -344,14 +329,14 @@ void ObjectMove(TObject* obj) {
             ObjectSetDestPoint(obj, player.pos.x, 700, enemySpeed);
         }
 
-            for (int i = 0; i < masCounter; i++)
-            {
-                if (obj->pos.y > 600) {
-                    obj->isDel = TRUE;
-                }
+        for (int i = 0; i < masCounter; i++)
+        {
+            if (obj->pos.y > 600) {
+                obj->isDel = TRUE;
             }
+        }
 
-        if(ObjectCollision(*obj, player)) {
+        if (ObjectCollision(*obj, player)) {
             needNewGame = TRUE;
         }
     }
@@ -363,7 +348,7 @@ void ObjectMove(TObject* obj) {
         if (obj->range < 0) obj->isDel = TRUE; // bullet will be deleted if range be exceeded
         for (int i = 0; i < masCounter; i++)
         {
-            if ((mas[i].oType == 'z') && (ObjectCollision(*obj, mas[i]))) { 
+            if ((mas[i].oType == 'z') && (ObjectCollision(*obj, mas[i]))) {
                 mas[i].isDel = TRUE;
                 obj->isDel = TRUE;
             }
@@ -372,7 +357,7 @@ void ObjectMove(TObject* obj) {
 }
 
 void LoadImageBtm(HWND hwnd, wchar_t path[]) {
-    
+
     HDC hdc;
     PAINTSTRUCT ps;
     BITMAP bitmap;
@@ -393,9 +378,9 @@ void LoadImageBtm(HWND hwnd, wchar_t path[]) {
 }
 
 void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed) {
-    
+
     TPoint xyLen = point(xPos - obj->pos.x, yPos - obj->pos.y); // found length between obj and destination point
-    float dxy = (float) sqrt(xyLen.x * xyLen.x + xyLen.y * xyLen.y);  // directly path
+    float dxy = (float)sqrt(xyLen.x * xyLen.x + xyLen.y * xyLen.y);  // directly path
     obj->speed.x = xyLen.x / dxy * vecSpeed;
     obj->speed.y = xyLen.y / dxy * vecSpeed;
     obj->vecSpeed = vecSpeed;
