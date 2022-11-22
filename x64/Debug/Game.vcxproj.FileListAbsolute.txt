@@ -1,1 +1,2 @@
 D:\C\c-projects\Game\x64\Debug\Game.exe
+D:\C-projects\c-projects\MasaGame\Game\x64\Debug\Game.exe

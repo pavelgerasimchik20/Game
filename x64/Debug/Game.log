@@ -1,3 +1,2 @@
 ﻿  main.c
-D:\C\c-projects\Game\main.c(20,37): warning C4267: 'function': conversion from 'size_t' to 'DWORD', possible loss of data
-  Game.vcxproj -> D:\C\c-projects\Game\x64\Debug\Game.exe
+  Game.vcxproj -> D:\C-projects\c-projects\MasaGame\Game\x64\Debug\Game.exe

@@ -31,9 +31,9 @@ TObject player;
 PObject mas = NULL;
 int masCounter = 0;
 RECT clientArea;
-HBITMAP hbtm; // global var to draw btm
+HBITMAP hbtm; 
 wchar_t welcomeStr[] = L"D:\\Pictures\\welcome.bmp";
-BOOL needNewGame = FALSE;
+BOOL needNewGame = FALSE; 
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 TPoint point(float x, float y);
@@ -52,13 +52,14 @@ BOOL ObjectCollision(TObject o1, TObject o2);
 void DelObjects(void);
 void GenerateEnemies(void);
 void AddEnemy(float, float);
+void ShowOnlyPlayer(HDC, int, int);
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PWSTR pCmdLine, int nCmdShow) {
 
     MSG msg;
     HWND hwnd;
-    WNDCLASSW wc;
+    WNDCLASSW wc; // reg
 
     wc.style = CS_HREDRAW | CS_VREDRAW; // vertical and horizontal redrawing
     wc.cbClsExtra = 0;
@@ -68,7 +69,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wc.hbrBackground = GetSysColorBrush(COLOR_3DHILIGHT);
     wc.lpszMenuName = NULL;
     wc.lpfnWndProc = WndProc;
-    wc.hCursor = LoadCursorW(NULL, IDC_CROSS);
+    wc.hCursor = LoadCursorW(NULL, IDC_CROSS); //crossline
     wc.hIcon = LoadIcon(NULL, IDI_ERROR);
 
     RegisterClassW(&wc);
@@ -82,7 +83,11 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UpdateWindow(hwnd);
     WinInit();
 
-    Sleep(3000); // show welcome page
+    ShowCursor(FALSE);
+    Sleep(2500); // show welcome page
+    ShowOnlyPlayer(dc, clientAreaHor, clientAreaVert); 
+    Sleep(2500);
+    ShowCursor(TRUE);
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the messages queue
             if (msg.message == WM_QUIT) break;
@@ -195,6 +200,18 @@ void AddMenus(HWND hwnd) {
     SetMenu(hwnd, hMenubar);
 }
 
+void ShowOnlyPlayer(HDC dc, int hor, int vert) {
+
+    HDC virtualDC = CreateCompatibleDC(dc); // virtual context
+    HBITMAP virtualBITMAP = CreateCompatibleBitmap(dc, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top);
+    SelectObject(virtualDC, virtualBITMAP); // so in a context virtualDC I will draw on the picture virtualBITMAP
+    ObjectShow(player, virtualDC);
+
+    BitBlt(dc, 0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top, virtualDC, 0, 0, SRCCOPY);
+    DeleteDC(virtualDC);
+    DeleteObject(virtualBITMAP);
+}
+
 void WinShow(HDC dc, int hor, int vert) {
 
     HDC virtualDC = CreateCompatibleDC(dc); // virtual context
@@ -220,17 +237,19 @@ void PlayerControl() {
     player.speed.y = 0;
     if (GetKeyState('A') < 0) player.speed.x = -playerSpeed;
     if (GetKeyState('D') < 0) player.speed.x = playerSpeed;
+    /*if (GetKeyState('W') < 0) player.speed.y = -playerSpeed;*/
+   /* if (GetKeyState('S') < 0) player.speed.y = playerSpeed;*/
     if (player.pos.x < -20) player.pos.x = 0;
     if (player.pos.x > 1170) player.pos.x = 1150;
-    if (player.pos.y < -20) player.pos.y = 0;
-    if (player.pos.y > 620) player.pos.y = 600;
+    //if (player.pos.y < -20) player.pos.y = 0;
+    //if (player.pos.y > 620) player.pos.y = 600;
     if ((player.speed.x != 0) && (player.speed.y != 0))
         player.speed = point(player.speed.x * 0.7f, player.speed.y * 0.7f);
 }
 void GenerateEnemies() {
    
     int posX = (rand() % 2 == 0 ? -200 : 200);
-    if (player.pos.x < 200) {
+    if (player.pos.x < 200 ) {
         posX = 150;
     }
     //int posY = 0;
@@ -239,7 +258,7 @@ void GenerateEnemies() {
         AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
     }
     if (k == 2) {
-        AddEnemy((float)(player.pos.x), (float)(player.pos.y + 700));
+        AddEnemy((float)(player.pos.x - posX), (float)(player.pos.y + 700));
     }
 }
 void WinMove() {
@@ -275,7 +294,8 @@ void DelObjects() {
         if (mas[i].isDel) {
             masCounter--;
             mas[i] = mas[masCounter];
-            mas = realloc(mas, sizeof(*mas) * masCounter);
+            // and allocate memory
+            mas = realloc(mas, sizeof(*mas) * masCounter); 
         }
         else {
             i++;
@@ -337,7 +357,7 @@ void ObjectMove(TObject* obj) {
         }
 
         if (ObjectCollision(*obj, player)) {
-            needNewGame = TRUE;
+            needNewGame = TRUE; // GG WP
         }
     }
     obj->pos.x += obj->speed.x;
@@ -381,7 +401,8 @@ void ObjectSetDestPoint(TObject* obj, float xPos, float yPos, float vecSpeed) {
 
     TPoint xyLen = point(xPos - obj->pos.x, yPos - obj->pos.y); // found length between obj and destination point
     float dxy = (float)sqrt(xyLen.x * xyLen.x + xyLen.y * xyLen.y);  // directly path
-    obj->speed.x = xyLen.x / dxy * vecSpeed;
+    // and set speed to each axis
+    obj->speed.x = xyLen.x / dxy * vecSpeed;  
     obj->speed.y = xyLen.y / dxy * vecSpeed;
     obj->vecSpeed = vecSpeed;
 }
