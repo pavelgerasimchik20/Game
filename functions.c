@@ -27,7 +27,7 @@ TPoint point(float x, float y) {
     return point;
 }
 
-PObject NewObject() { //function NewObject cteate element of array and return (last) element 
+PObject NewObject() { //function NewObject cteate element of array and return (last) element or run recursion 
     masCounter++;
     mas = realloc(mas, sizeof(*mas) * masCounter);
 
