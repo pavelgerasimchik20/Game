@@ -1,4 +1,7 @@
-A space game in which a SpAcE_ship shoots at oncoming enemies 
+  A space game in which a SpAcE_ship shoots at oncoming enemies. 
+  Main task of the game - run and shoot to stay alive.
+  
+  
 
 †        †    †
   †    †     †
@@ -10,5 +13,3 @@ A space game in which a SpAcE_ship shoots at oncoming enemies
       .
       /\
      |__|
-
-![alt text](https://github.com/pavelgerasimchik20/Game/blob/main/images/welcome.bmp?raw=true)
