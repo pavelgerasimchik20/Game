@@ -88,6 +88,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ShowOnlyPlayer(dc, clientAreaHor, clientAreaVert); 
     Sleep(2500);
     ShowCursor(TRUE);
+    SetCursorPos((clientAreaHor/2) + 190, (clientAreaVert/2)); //set cursor to middle of the game field
     while (1) {
         if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) { // check the messages queue
             if (msg.message == WM_QUIT) break;
@@ -345,7 +346,7 @@ void WinInit() {
 void ObjectMove(TObject* obj) {
     if (obj->oType == 'z') {
         if (rand() % 50 == 1) {
-            static float enemySpeed = 9.0;
+            static float enemySpeed = 6.5;
             ObjectSetDestPoint(obj, player.pos.x, 700, enemySpeed);
         }
 
