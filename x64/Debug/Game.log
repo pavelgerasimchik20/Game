@@ -1,2 +1,3 @@
 ﻿  functions.c
+D:\C-projects\c-projects\MasaGame\Game\functions.c(41): warning C4715: 'NewObject': not all control paths return a value
   Game.vcxproj -> D:\C-projects\c-projects\MasaGame\Game\x64\Debug\Game.exe

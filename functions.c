@@ -30,7 +30,14 @@ TPoint point(float x, float y) {
 PObject NewObject() { //function NewObject cteate element of array and return (last) element 
     masCounter++;
     mas = realloc(mas, sizeof(*mas) * masCounter);
-    return mas + masCounter - 1;
+
+    int variator = rand()*100;
+    if (variator % 2 == 0) {
+        return mas + masCounter - 1;
+    }
+    else {
+        NewObject();
+    }
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
