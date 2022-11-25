@@ -31,7 +31,7 @@ PObject NewObject() { //function NewObject cteate element of array and return (l
     masCounter++;
     mas = (PObject) realloc(mas, sizeof(*mas) * masCounter);
 
-    int variator = rand()*100;
+    int variator = rand() * 2;
     if (variator % 2 == 0) {
         return mas + masCounter - 1;
     }
@@ -185,7 +185,7 @@ void PlayerControl() {
 void GenerateEnemies() {
 
     int posX = rand() % 200;
-    int k = rand() % 40;  // takt enemies creating
+    int k = rand() % 35;  // takt enemies creating
     if (k == 1) {
         if (player.pos.x < 900) {
             AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
@@ -218,7 +218,7 @@ void DelObjects() {
             masCounter--;
             mas[i] = mas[masCounter];
             // and allocate memory
-            mas = realloc(mas, sizeof(*mas) * masCounter);
+            mas = (PObject) realloc(mas, sizeof(*mas) * masCounter);
         }
         else {
             i++;
