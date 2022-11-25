@@ -29,14 +29,14 @@ TPoint point(float x, float y) {
 
 PObject NewObject() { //function NewObject cteate element of array and return (last) element or run recursion 
     masCounter++;
-    mas = realloc(mas, sizeof(*mas) * masCounter);
+    mas = (PObject) realloc(mas, sizeof(*mas) * masCounter);
 
     int variator = rand()*100;
     if (variator % 2 == 0) {
         return mas + masCounter - 1;
     }
     else {
-        NewObject();
+        return mas = NewObject();
     }
 }
 
@@ -184,17 +184,17 @@ void PlayerControl() {
 }
 void GenerateEnemies() {
 
-    int posX = (rand() % 2 == 0 ? -200 : 200);
-    if (player.pos.x < 200) {
-        posX = 150;
-    }
-    //int posY = 0;
-    int k = rand() % 20;  // takt en cr
+    int posX = rand() % 200;
+    int k = rand() % 40;  // takt enemies creating
     if (k == 1) {
-        AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
+        if (player.pos.x < 900) {
+            AddEnemy((float)(player.pos.x + posX), (float)(player.pos.y - 700));
+        }
     }
     if (k == 2) {
-        AddEnemy((float)(player.pos.x - posX), (float)(player.pos.y + 700));
+        if (player.pos.x > 200) {
+            AddEnemy((float)(player.pos.x - posX), (float)(player.pos.y - 700));
+        }
     }
 }
 void WinMove() {

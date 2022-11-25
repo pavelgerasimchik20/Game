@@ -127,11 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="customList.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="functions.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Pictures\welcome.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

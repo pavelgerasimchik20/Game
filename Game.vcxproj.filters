@@ -21,10 +21,18 @@
     <ClCompile Include="functions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="customList.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Pictures\welcome.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
